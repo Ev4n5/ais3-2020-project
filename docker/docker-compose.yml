@@ -1,0 +1,8 @@
+version: '2'
+services:
+    sensor:
+        build: .
+        ports:
+        - "5300:5300"
+        volumes:
+        - .:/app
