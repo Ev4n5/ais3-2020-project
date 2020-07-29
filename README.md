@@ -1,24 +1,11 @@
-# neo4j-viz
+# AIS3 2020 - project
 
-## Project setup
-```
-npm install
-```
+關鍵基礎設施安全
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+視覺化流量
 
-### Compiles and minifies for production
-```
-npm run build
-```
+## Neo4j Relative
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- [Install neo4j](https://neo4j.com/download-center/#community)
+- [visualize tools](https://neo4j.com/developer/tools-graph-visualization/)
+- [visualize tools - neovis](https://www.npmjs.com/package/neovis.js)
