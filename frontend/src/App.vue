@@ -30,6 +30,9 @@ const vizInit = () => {
         size: "defaultPagerank",
         community: "defaultCommunity",
       },
+      Host: {
+        caption: "mac",
+      },
     },
     relationships: {
       INTERACTS: {
@@ -37,12 +40,26 @@ const vizInit = () => {
         caption: false,
       },
       [NeoVis.NEOVIS_DEFAULT_CONFIG]: {
-        thickness: "defaultThicknessProperty",
-        caption: "defaultCaption",
+        // thickness: "defaultThicknessProperty",
+        // caption: "defaultCaption",
+        thickness: "count",
+        caption: true,
+      },
+      tcp: {
+        color: "purple",
+        thickness: "count",
+      },
+      udp: {
+        color: "red",
+        thickness: "count",
       },
     },
     initial_cypher:
-      'MATCH p=(bacon:Person {name:"Kevin Bacon"})-[*1..4]-(hollywood) RETURN p',
+      // 'MATCH p=(bacon:Person {name:"Kevin Bacon"})-[*1..4]-(hollywood) RETURN p',
+      `MATCH (a:Host)-[r]->(b)
+WHERE r.created_at < datetime({year: 2020, month: 8, day: 30, hour: 17, minute: 10, second: 0, timezone: "+08:00"})
+WITH a, collect(r) AS r, b, count(r) as cnt, type(r) AS relName
+RETURN a, b, apoc.create.vRelationship(a, relName, {count: cnt}, b) as rel`,
   };
 
   viz = new NeoVis.default(config);
