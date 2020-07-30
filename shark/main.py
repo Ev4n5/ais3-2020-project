@@ -84,4 +84,4 @@ if __name__ == '__main__':
     pser = argparse.ArgumentParser()
     pser.add_argument('-i', '--interface', required=True, help='network interface name')
     args = pser.parse_args()
-    main(args.i)
+    main(args.interface)
