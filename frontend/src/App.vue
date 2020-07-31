@@ -7,10 +7,13 @@
         圖示
         <ul class="list-group">
           <li class="list-group-item">
-            <font-awesome-icon :icon="['fas', 'circle']" style="color:purple"/> tcp
+            <font-awesome-icon :icon="['fas', 'circle']" style="color:purple" /> tcp
           </li>
           <li class="list-group-item">
-            <font-awesome-icon :icon="['fas', 'circle']" style="color:red"/> udp
+            <font-awesome-icon :icon="['fas', 'circle']" style="color:red" /> udp
+          </li>
+          <li class="list-group-item">
+            <font-awesome-icon :icon="['fas', 'circle']" style="color:orange" /> arp
           </li>
         </ul>
       </div>
@@ -65,6 +68,7 @@
               <div class="card-header">
                 <div class="row">
                   <h2 class="col-md text-left">目前流量</h2>
+                  <button class="btn btn-secondary" v-on:click="myClick">重整</button>
                 </div>
               </div>
               <div id="viz2" class="neovis-container"></div>
@@ -107,7 +111,10 @@ const vizConfig = {
       community: "defaultCommunity",
     },
     Host: {
-      caption: "mac",
+      caption: (node) => {
+        return node.properties.mac.substr(-5);
+      },
+      community: "community",
     },
   },
   relationships: {
@@ -122,15 +129,17 @@ const vizConfig = {
     },
     tcp: {
       color: "purple",
-      thickness: "count",
     },
     udp: {
       color: "red",
-      thickness: "count",
+    },
+    arp: {
+      color: "orange",
     },
   },
 };
 
+const mac_prefix = "02:42:ac:11";
 let viz = null;
 const vizInit = (y1, mon1, d1, h1, min1, y2, mon2, d2, h2, min2) => {
   console.log("vizInit");
@@ -142,14 +151,17 @@ const vizInit = (y1, mon1, d1, h1, min1, y2, mon2, d2, h2, min2) => {
       `MATCH (a:Host)-[r]->(b)
 WHERE r.created_at > datetime({year: ${y1}, month: ${mon1}, day: ${d1}, hour: ${h1}, minute: ${min1}, timezone: "+08:00"})
 AND r.created_at < datetime({year: ${y2}, month: ${mon2}, day: ${d2}, hour: ${h2}, minute: ${min2}, timezone: "+08:00"})
+AND a.mac STARTS WITH '${mac_prefix}'
+AND b.mac STARTS WITH '${mac_prefix}'
 WITH a, collect(r) AS r, b, count(r) as cnt, type(r) AS relName
-RETURN a, b, apoc.create.vRelationship(a, relName, {count: cnt}, b) as rel`,
+RETURN a, b, apoc.create.vRelationship(a, relName, {type: relName, count: cnt}, b) as rel`,
   };
 
   viz = new NeoVis.default(config);
   viz.render();
 };
 
+let viz2 = null;
 const vizInit2 = () => {
   console.log("vizInit2");
   let config = {
@@ -160,12 +172,19 @@ const vizInit2 = () => {
       `WITH datetime({timezone:"+08:00"}) AS cur
 MATCH (a:Host)-[r]->(b)
 WHERE r.created_at > datetime({epochSeconds: cur.epochSeconds - 60*3})
+AND a.mac STARTS WITH '${mac_prefix}'
+AND b.mac STARTS WITH '${mac_prefix}'
 WITH a, collect(r) AS r, b, count(r) as cnt, type(r) AS relName
-RETURN a, b, apoc.create.vRelationship(a, relName, {count: cnt}, b) as rel`,
+RETURN a, b, apoc.create.vRelationship(a, relName, {type: relName, count: cnt}, b) as rel`,
   };
 
-  viz = new NeoVis.default(config);
-  viz.render();
+  viz2 = new NeoVis.default(config);
+  viz2.render();
+};
+
+const myClick = () => {
+  console.log("reload");
+  viz2.reload();
 };
 
 export default {
@@ -202,6 +221,9 @@ export default {
         ...val.split(/[- :]/).map((e) => parseInt(e))
       );
     },
+  },
+  methods: {
+    myClick: myClick,
   },
 };
 </script>
