@@ -173,10 +173,10 @@ export default {
   },
   watch: {
     dateFrom(val) {
-      vizInit(...val.split(/[- :]/), ...this.dateTo.split(/[- :]/));
+      vizInit(...(val.split(/[- :]/).map(e => parseInt(e))), ...(this.dateTo.split(/[- :]/)).map(e => parseInt(e)));
     },
     dateTo(val) {
-      vizInit(...this.dateFrom.split(/[- :]/), ...val.split(/[- :]/));
+      vizInit(...(this.dateFrom.split(/[- :]/).map(e => parseInt(e))), ...(val.split(/[- :]/)).map(e => parseInt(e)));
     },
   },
 };
