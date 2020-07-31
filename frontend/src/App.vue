@@ -2,68 +2,86 @@
   <div id="app" class="container-fluid">
     <!-- <img alt="Vue logo" src="./assets/logo.png" /> -->
     <!-- <HelloWorld msg="Welcome to Your Vue.js App" /> -->
-    <h1 class="my-4">OT 設備流量視覺化</h1>
-    <div class="row bd-highlight mb-3">
-      <div class="col-md my-1">
-        <div class="card">
-          <div class="card-header">
-            <div class="row">
-              <h2 class="col-md-8 text-left">正常流量</h2>
-              <!-- <font-awesome-icon :icon="['fas', 'caret-down']" class="float-right" /> -->
-              <div class="dropdown float-right my-0 col-md-4">
-                <button
-                  class="btn btn-secondary dropdown-toggle float-right"
-                  type="button"
-                  id="dropdownMenuButton"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >設定</button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">
-                    from:
-                    <flat-pickr
-                      v-model="dateFrom"
-                      :config="config"
-                      class="form-control"
-                      placeholder="Select date"
-                      name="date"
-                    ></flat-pickr>
-                  </a>
-                  <a class="dropdown-item" href="#">
-                    to:
-                    <flat-pickr
-                      v-model="dateTo"
-                      :config="config"
-                      class="form-control"
-                      placeholder="Select date"
-                      name="date"
-                    ></flat-pickr>
-                  </a>
+    <div class="row text-left">
+      <div class="col-md-2">
+        圖示
+        <ul class="list-group">
+          <li class="list-group-item">
+            <font-awesome-icon :icon="['fas', 'circle']" style="color:purple"/> tcp
+          </li>
+          <li class="list-group-item">
+            <font-awesome-icon :icon="['fas', 'circle']" style="color:red"/> udp
+          </li>
+        </ul>
+      </div>
+      <div class="col-md-10">
+        <h1 class="my-4 text-center">OT 設備流量視覺化</h1>
+        <div class="row bd-highlight mb-3">
+          <div class="col-md my-1">
+            <div class="card">
+              <div class="card-header">
+                <div class="row">
+                  <h2 class="col-md-8 text-left">正常流量</h2>
+                  <!-- <font-awesome-icon :icon="['fas', 'caret-down']" class="float-right" /> -->
+                  <div class="dropdown float-right my-0 col-md-4">
+                    <button
+                      class="btn btn-secondary dropdown-toggle float-right"
+                      type="button"
+                      id="dropdownMenuButton"
+                      data-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                    >設定</button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a class="dropdown-item" href="#">
+                        from:
+                        <flat-pickr
+                          v-model="dateFrom"
+                          :config="config"
+                          class="form-control"
+                          placeholder="Select date"
+                          name="date"
+                        ></flat-pickr>
+                      </a>
+                      <a class="dropdown-item" href="#">
+                        to:
+                        <flat-pickr
+                          v-model="dateTo"
+                          :config="config"
+                          class="form-control"
+                          placeholder="Select date"
+                          name="date"
+                        ></flat-pickr>
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
+              <div id="viz" class="neovis-container"></div>
             </div>
           </div>
-          <div id="viz" class="neovis-container"></div>
+          <div class="col-md my-1">
+            <div class="card">
+              <div class="card-header">
+                <div class="row">
+                  <h2 class="col-md text-left">目前流量</h2>
+                </div>
+              </div>
+              <div id="viz2" class="neovis-container"></div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="col-md my-1">
         <div class="card">
-          <div class="card-header">
-            <div class="row">
-              <h2 class="col-md text-left">目前流量</h2>
-            </div>
-          </div>
-          <div id="viz2" class="neovis-container"></div>
+          <div class="card-body">This is some text within a card body.</div>
         </div>
-      </div>
-    </div>
-    <!-- <div class="input-group">
+        <!-- <div class="input-group">
       <flat-pickr v-model="date" :config="config"></flat-pickr>
       <button class="btn btn-default" type="button" title="Toggle" data-toggle>
         <font-awesome-icon :icon="['far', 'calendar-alt']" />
       </button>
-    </div>-->
+        </div>-->
+      </div>
+    </div>
   </div>
 </template>
 
@@ -99,9 +117,8 @@ const vizConfig = {
     },
     [NeoVis.NEOVIS_DEFAULT_CONFIG]: {
       // thickness: "defaultThicknessProperty",
-      // caption: "defaultCaption",
+      caption: "defaultCaption",
       thickness: "count",
-      caption: true,
     },
     tcp: {
       color: "purple",
@@ -140,8 +157,9 @@ const vizInit2 = () => {
     container_id: "viz2",
     initial_cypher:
       // 'MATCH p=(bacon:Person {name:"Kevin Bacon"})-[*1..4]-(hollywood) RETURN p',
-      `MATCH (a:Host)-[r]->(b)
-WHERE r.created_at > datetime({year: 2020, month: 7, day: 30, hour: 0, minute: 0, timezone: "+08:00"})
+      `WITH datetime({timezone:"+08:00"}) AS cur
+MATCH (a:Host)-[r]->(b)
+WHERE r.created_at > datetime({epochSeconds: cur.epochSeconds - 60*3})
 WITH a, collect(r) AS r, b, count(r) as cnt, type(r) AS relName
 RETURN a, b, apoc.create.vRelationship(a, relName, {count: cnt}, b) as rel`,
   };
@@ -173,10 +191,16 @@ export default {
   },
   watch: {
     dateFrom(val) {
-      vizInit(...(val.split(/[- :]/).map(e => parseInt(e))), ...(this.dateTo.split(/[- :]/)).map(e => parseInt(e)));
+      vizInit(
+        ...val.split(/[- :]/).map((e) => parseInt(e)),
+        ...this.dateTo.split(/[- :]/).map((e) => parseInt(e))
+      );
     },
     dateTo(val) {
-      vizInit(...(this.dateFrom.split(/[- :]/).map(e => parseInt(e))), ...(val.split(/[- :]/)).map(e => parseInt(e)));
+      vizInit(
+        ...this.dateFrom.split(/[- :]/).map((e) => parseInt(e)),
+        ...val.split(/[- :]/).map((e) => parseInt(e))
+      );
     },
   },
 };
@@ -193,6 +217,6 @@ export default {
 }
 
 .neovis-container {
-  height: 400px;
+  height: 600px;
 }
 </style>
