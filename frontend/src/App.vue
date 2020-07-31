@@ -195,7 +195,7 @@ export default {
   name: "App",
   data: () => ({
     dateFrom: "2020-07-29 12:00",
-    dateTo: "2020-07-31 12:00",
+    dateTo: "2020-07-31 15:00",
     date: null,
     config: {
       wrap: true,
