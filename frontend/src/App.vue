@@ -3,8 +3,8 @@
     <!-- <img alt="Vue logo" src="./assets/logo.png" /> -->
     <!-- <HelloWorld msg="Welcome to Your Vue.js App" /> -->
     <div class="row text-left">
-      <div class="col-md-2">
-        圖示
+      <div class="col-md-2 my-4">
+        <h4 class="text-center">圖示</h4>
         <ul class="list-group">
           <li class="list-group-item">
             <font-awesome-icon :icon="['fas', 'circle']" style="color:purple" /> tcp
@@ -14,6 +14,9 @@
           </li>
           <li class="list-group-item">
             <font-awesome-icon :icon="['fas', 'circle']" style="color:orange" /> arp
+          </li>
+          <li class="list-group-item">
+            <font-awesome-icon :icon="['fas', 'circle']" style="color:green" /> icmp
           </li>
         </ul>
       </div>
@@ -75,9 +78,9 @@
             </div>
           </div>
         </div>
-        <div class="card">
+        <!-- <div class="card">
           <div class="card-body">This is some text within a card body.</div>
-        </div>
+        </div> -->
         <!-- <div class="input-group">
       <flat-pickr v-model="date" :config="config"></flat-pickr>
       <button class="btn btn-default" type="button" title="Toggle" data-toggle>
@@ -136,6 +139,9 @@ const vizConfig = {
     arp: {
       color: "orange",
     },
+    icmp: {
+      color: "green",
+    },
   },
 };
 
@@ -147,7 +153,6 @@ const vizInit = (y1, mon1, d1, h1, min1, y2, mon2, d2, h2, min2) => {
     ...vizConfig,
     container_id: "viz",
     initial_cypher:
-      // 'MATCH p=(bacon:Person {name:"Kevin Bacon"})-[*1..4]-(hollywood) RETURN p',
       `MATCH (a:Host)-[r]->(b)
 WHERE r.created_at > datetime({year: ${y1}, month: ${mon1}, day: ${d1}, hour: ${h1}, minute: ${min1}, timezone: "+08:00"})
 AND r.created_at < datetime({year: ${y2}, month: ${mon2}, day: ${d2}, hour: ${h2}, minute: ${min2}, timezone: "+08:00"})
@@ -168,7 +173,6 @@ const vizInit2 = () => {
     ...vizConfig,
     container_id: "viz2",
     initial_cypher:
-      // 'MATCH p=(bacon:Person {name:"Kevin Bacon"})-[*1..4]-(hollywood) RETURN p',
       `WITH datetime({timezone:"+08:00"}) AS cur
 MATCH (a:Host)-[r]->(b)
 WHERE r.created_at > datetime({epochSeconds: cur.epochSeconds - 60*3})
